@@ -1,12 +1,14 @@
 import { NextFunction, Request, Response } from "express"
 import { stripHtml } from "string-strip-html"
-import UnprocessableEntity from "../errors/UnprocessableEntityError"
+import UnprocessableEntity from "../errors/UnprocessableEntityError.js"
+import cardSchema from "../schemas/cardSchema.js"
 
 function sanitizeString(string: string){
     return stripHtml(string).result.trim()
 }
 
 const schemas = {
+    "/cards": cardSchema
 }
 
 export default async function validateSchemaMiddleware(req: Request, res: Response, next: NextFunction){
