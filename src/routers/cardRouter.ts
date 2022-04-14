@@ -5,5 +5,6 @@ import validateApiKeyMiddleware from "../middlewares/validateApiKeyMiddleware.js
 
 const cardRouter = Router();
 cardRouter.post("/cards", validateSchemaMiddleware, validateApiKeyMiddleware, controller.createCard)
+cardRouter.post("/cards/:id/activate", validateSchemaMiddleware, controller.activateCard)
 
 export default cardRouter; 

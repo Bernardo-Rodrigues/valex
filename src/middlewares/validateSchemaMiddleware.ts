@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express"
 import { stripHtml } from "string-strip-html"
 import UnprocessableEntity from "../errors/UnprocessableEntityError.js"
+import activateCardSchema from "../schemas/activateCardSchema.js"
 import cardSchema from "../schemas/cardSchema.js"
 
 function sanitizeString(string: string){
@@ -8,12 +9,16 @@ function sanitizeString(string: string){
 }
 
 const schemas = {
-    "/cards": cardSchema
+    "/cards": cardSchema,
+    "/cards/activate": activateCardSchema
 }
 
 export default async function validateSchemaMiddleware(req: Request, res: Response, next: NextFunction){
     const { body } = req
-    const schema = schemas["/"+req.path.split("/")[1]]
+    const route = req.path.split("/").length === 2 
+    ? "/"+req.path.split("/")[1]
+    : "/"+req.path.split("/")[1]+"/"+req.path.split("/")[3]
+    const schema = schemas[route]
 
     Object.keys(body).forEach( key => {
         if(typeof(body[key]) === "string") body[key] = sanitizeString(body[key])
