@@ -3,6 +3,7 @@ import { stripHtml } from "string-strip-html"
 import UnprocessableEntity from "../errors/UnprocessableEntityError.js"
 import activateCardSchema from "../schemas/activateCardSchema.js"
 import cardSchema from "../schemas/cardSchema.js"
+import passwordSchema from "../schemas/passwordSchema.js"
 import paymentSchema from "../schemas/paymentSchema.js"
 import rechargeSchema from "../schemas/rechargeSchema.js"
 
@@ -14,7 +15,8 @@ const schemas = {
     "/cards": cardSchema,
     "/cards/activate": activateCardSchema,
     "/cards/recharge": rechargeSchema,
-    "/cards/payment": paymentSchema
+    "/cards/payment": paymentSchema,
+    "/cards/block": passwordSchema
 }
 
 export default async function validateSchemaMiddleware(req: Request, res: Response, next: NextFunction){

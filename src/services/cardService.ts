@@ -10,6 +10,7 @@ import * as paymentRepository from "../repositories/paymentRepository.js"
 import Conflict from "../errors/ConflictError.js";
 import { formatEmployeeName } from "../utils/formatEmployeeName.js";
 import Unauthorized from "../errors/UnauthorizedError.js";
+import Forbidden from "../errors/ForbiddenError.js";
 
 export async function createCard(newCard: any){
     const employee = await employeeRepository.findById(newCard.employeeId);
@@ -99,6 +100,19 @@ export async function getMetrics(cardId: any){
     const metrics = organizeMetrics({balance, transactions, recharges})
 
     return metrics
+}
+export async function blockCard(cardInfo: any){
+    const card = await cardRepository.findById(cardInfo.cardId);
+    if(!card) throw new NotFound("Card not registered")
+
+    if(!bcrypt.compareSync(cardInfo.cardPassword, card.password)) throw new Unauthorized("Password is wrong")
+    
+    const formatedExpirationDate = `${card.expirationDate.split("/")[0]}/01/${card.expirationDate.split("/")[1]}`
+    if(dayjs(formatedExpirationDate).isBefore(dayjs())) throw new Unauthorized("Card is expired")
+    
+    if(card.isBlocked) throw new Forbidden("Card already blocked")
+
+    await cardRepository.update(cardInfo.id, {...card, isBlocked: true})
 }
 
 function organizeMetrics(metrics: any){
