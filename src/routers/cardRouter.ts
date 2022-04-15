@@ -7,5 +7,6 @@ const cardRouter = Router();
 cardRouter.post("/cards", validateSchemaMiddleware, validateApiKeyMiddleware, controller.createCard)
 cardRouter.post("/cards/:id/activate", validateSchemaMiddleware, controller.activateCard)
 cardRouter.post("/cards/:id/recharge", validateApiKeyMiddleware, validateSchemaMiddleware, controller.rechargeCard)
+cardRouter.post("/cards/:id/payment", validateSchemaMiddleware, controller.makePayment)
 
 export default cardRouter; 

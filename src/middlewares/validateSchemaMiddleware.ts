@@ -3,6 +3,7 @@ import { stripHtml } from "string-strip-html"
 import UnprocessableEntity from "../errors/UnprocessableEntityError.js"
 import activateCardSchema from "../schemas/activateCardSchema.js"
 import cardSchema from "../schemas/cardSchema.js"
+import paymentSchema from "../schemas/paymentSchema.js"
 import rechargeSchema from "../schemas/rechargeSchema.js"
 
 function sanitizeString(string: string){
@@ -12,7 +13,8 @@ function sanitizeString(string: string){
 const schemas = {
     "/cards": cardSchema,
     "/cards/activate": activateCardSchema,
-    "/cards/recharge": rechargeSchema
+    "/cards/recharge": rechargeSchema,
+    "/cards/payment": paymentSchema
 }
 
 export default async function validateSchemaMiddleware(req: Request, res: Response, next: NextFunction){

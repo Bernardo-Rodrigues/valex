@@ -5,6 +5,8 @@ import NotFound from "../errors/NotFoundError.js";
 import * as employeeRepository from "../repositories/employeeRepository.js"
 import * as cardRepository from "../repositories/cardRepository.js"
 import * as rechargeRepository from "../repositories/rechargeRepository.js"
+import * as businessRepository from "../repositories/businessRepository.js"
+import * as paymentRepository from "../repositories/paymentRepository.js"
 import Conflict from "../errors/ConflictError.js";
 import { formatEmployeeName } from "../utils/formatEmployeeName.js";
 import Unauthorized from "../errors/UnauthorizedError.js";
@@ -61,4 +63,25 @@ export async function rechargeCard(cardId: any, amount: number){
     if(dayjs(formatedExpirationDate).isBefore(dayjs())) throw new Unauthorized("Card is expired")
 
     await rechargeRepository.insert({cardId, amount});
+}
+
+export async function makePayment(paymentInfo: any){
+    const card = await cardRepository.findById(paymentInfo.cardId);
+    if(!card) throw new NotFound("Card not registered")
+
+    const formatedExpirationDate = `${card.expirationDate.split("/")[0]}/01/${card.expirationDate.split("/")[1]}`
+    if(dayjs(formatedExpirationDate).isBefore(dayjs())) throw new Unauthorized("Card is expired")
+
+    if(!bcrypt.compareSync(paymentInfo.password, card.password)) throw new Unauthorized("Password is wrong")
+
+    const business = await businessRepository.findById(paymentInfo.businessId)
+    if(!business) throw new NotFound("Business not registered")
+
+    if(business.type !== card.type) throw new Unauthorized("Invalid transaction")
+
+    const [ recharges, payments ] = await cardRepository.getBalance(paymentInfo.cardId)
+    const balance = recharges.value - payments.value
+    if(balance < paymentInfo.amount) throw new Unauthorized("Insufficient balance")
+
+    await paymentRepository.insert({cardId:paymentInfo.cardId, businessId:paymentInfo.businessId, amount:paymentInfo.amount})
 }

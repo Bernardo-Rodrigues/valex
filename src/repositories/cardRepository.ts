@@ -39,6 +39,23 @@ export async function findById(id: number) {
   return result.rows[0];
 }
 
+export async function getBalance(id: number) {
+  const result = await connection.query(
+    ` SELECT SUM(recharges.amount) as value 
+      FROM cards 
+      JOIN recharges ON recharges."cardId" = cards.id 
+      WHERE cards.id = $1
+      UNION ALL
+      SELECT SUM(payments.amount) as value 
+      FROM cards 
+      JOIN payments ON payments."cardId" = cards.id 
+      WHERE cards.id = $1`,
+    [id]
+  );
+
+  return result.rows;
+}
+
 export async function findByTypeAndEmployeeId(
   type: TransactionTypes,
   employeeId: number
