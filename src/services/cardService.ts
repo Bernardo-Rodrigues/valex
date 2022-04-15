@@ -79,9 +79,44 @@ export async function makePayment(paymentInfo: any){
 
     if(business.type !== card.type) throw new Unauthorized("Invalid transaction")
 
-    const [ recharges, payments ] = await cardRepository.getBalance(paymentInfo.cardId)
-    const balance = recharges.value - payments.value
+    const [ totalRecharges, totalPayments ] = await cardRepository.getTotalOfTransactions(paymentInfo.cardId)
+    const balance = totalRecharges.value - totalPayments.value
     if(balance < paymentInfo.amount) throw new Unauthorized("Insufficient balance")
 
     await paymentRepository.insert({cardId:paymentInfo.cardId, businessId:paymentInfo.businessId, amount:paymentInfo.amount})
+}
+
+export async function getMetrics(cardId: any){
+    const card = await cardRepository.findById(cardId);
+    if(!card) throw new NotFound("Card not registered")
+
+    const recharges = await rechargeRepository.findByCardId(cardId)
+    const transactions = await paymentRepository.findByCardId(cardId)
+
+    const [ totalRecharges, totalPayments ] = await cardRepository.getTotalOfTransactions(cardId)
+    const balance = totalRecharges.value - totalPayments.value
+
+    const metrics = organizeMetrics({balance, transactions, recharges})
+
+    return metrics
+}
+
+function organizeMetrics(metrics: any){
+    const transactions = formatDates(metrics.transactions)
+    const recharges = formatDates(metrics.recharges)
+
+    return {
+        balance: metrics.balance,
+        transactions,
+        recharges
+    }
+}
+
+function formatDates (objects:[]){
+    return objects.map( (object:any) => {
+        return{
+            ...object,
+            timestamp: dayjs(object.timestamp).format("DD/MM/YYYY"),
+        }
+    })
 }

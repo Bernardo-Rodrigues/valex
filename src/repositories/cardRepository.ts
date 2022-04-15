@@ -39,7 +39,7 @@ export async function findById(id: number) {
   return result.rows[0];
 }
 
-export async function getBalance(id: number) {
+export async function getTotalOfTransactions(id: number) {
   const result = await connection.query(
     ` SELECT SUM(recharges.amount) as value 
       FROM cards 

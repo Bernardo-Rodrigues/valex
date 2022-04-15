@@ -8,5 +8,6 @@ cardRouter.post("/cards", validateSchemaMiddleware, validateApiKeyMiddleware, co
 cardRouter.post("/cards/:id/activate", validateSchemaMiddleware, controller.activateCard)
 cardRouter.post("/cards/:id/recharge", validateApiKeyMiddleware, validateSchemaMiddleware, controller.rechargeCard)
 cardRouter.post("/cards/:id/payment", validateSchemaMiddleware, controller.makePayment)
+cardRouter.get("/cards/:id", controller.getMetrics)
 
 export default cardRouter; 

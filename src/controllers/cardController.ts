@@ -35,3 +35,11 @@ export async function  makePayment(req: Request, res: Response){
 
     res.sendStatus(200)
 }
+
+export async function  getMetrics(req: Request, res: Response){
+    const cardId = req.params.id
+
+    const metrics = await cardService.getMetrics(cardId);
+
+    res.status(200).send(metrics)
+}
