@@ -36,6 +36,14 @@ export async function  makePayment(req: Request, res: Response){
     res.sendStatus(200)
 }
 
+export async function  makeOnlinePurchase(req: Request, res: Response){
+    const purchaseInfo = req.body
+
+    await cardService.makeOnlinePayment(purchaseInfo);
+
+    res.sendStatus(200)
+}
+
 export async function  getMetrics(req: Request, res: Response){
     const cardId = req.params.id
 

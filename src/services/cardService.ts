@@ -88,6 +88,29 @@ export async function makePayment(paymentInfo: any){
     await paymentRepository.insert({cardId:paymentInfo.cardId, businessId:paymentInfo.businessId, amount:paymentInfo.amount})
 }
 
+export async function makeOnlinePayment(purchaseInfo: any){
+    const { number, name, expirationDate, CVC, businessId, amount } = purchaseInfo
+
+    const card = await cardRepository.findByCardDetails(number, name, expirationDate);
+    if(!card) throw new NotFound("Card not registered")
+
+    const formatedExpirationDate = `${card.expirationDate.split("/")[0]}/01/${card.expirationDate.split("/")[1]}`
+    if(dayjs(formatedExpirationDate).isBefore(dayjs())) throw new Unauthorized("Card is expired")
+    if(card.isBlocked) throw new Forbidden("Blocked card")
+
+    const business = await businessRepository.findById(businessId)
+    if(!business) throw new NotFound("Business not registered")
+
+    if(business.type !== card.type) throw new Unauthorized("Invalid card type")
+    console.log(card)
+
+    const [ totalRecharges, totalPayments ] = await cardRepository.getTotalOfTransactions(card.id)
+    const balance = totalRecharges.value - totalPayments.value
+    if(balance < amount) throw new Unauthorized("Insufficient balance")
+
+    await paymentRepository.insert({cardId:card.id, businessId, amount})
+}
+
 export async function getMetrics(cardId: any){
     const card = await cardRepository.findById(cardId);
     if(!card) throw new NotFound("Card not registered")

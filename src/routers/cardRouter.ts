@@ -13,5 +13,6 @@ cardRouter.post("/cards/:id/payment", validateSchemaMiddleware, controller.makeP
 cardRouter.post("/cards/:id/payment", validateSchemaMiddleware, controller.makePayment)
 cardRouter.post("/cards/:id/block", validateSchemaMiddleware, controller.blockCard)
 cardRouter.post("/cards/:id/unlock", validateSchemaMiddleware, controller.unlockCard)
+cardRouter.post("/cards/payment/online", validateSchemaMiddleware, controller.makeOnlinePurchase)
 
 export default cardRouter; 
