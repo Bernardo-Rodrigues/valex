@@ -44,6 +44,15 @@ export async function  getMetrics(req: Request, res: Response){
     res.status(200).send(metrics)
 }
 
+export async function  unlockCard(req: Request, res: Response){
+    const cardId = req.params.id
+    const { cardPassword } = req.body
+
+    await cardService.unlockCard({cardId, cardPassword});
+
+    res.sendStatus(200)
+}
+
 export async function  blockCard(req: Request, res: Response){
     const cardId = req.params.id
     const { cardPassword } = req.body

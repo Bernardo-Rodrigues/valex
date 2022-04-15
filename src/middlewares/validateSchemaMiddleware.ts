@@ -16,7 +16,8 @@ const schemas = {
     "/cards/activate": activateCardSchema,
     "/cards/recharge": rechargeSchema,
     "/cards/payment": paymentSchema,
-    "/cards/block": passwordSchema
+    "/cards/block": passwordSchema,
+    "/cards/unlock": passwordSchema
 }
 
 export default async function validateSchemaMiddleware(req: Request, res: Response, next: NextFunction){

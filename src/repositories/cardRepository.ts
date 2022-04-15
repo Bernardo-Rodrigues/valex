@@ -127,8 +127,9 @@ export async function update(id: number, cardData: CardUpdateData) {
     mapObjectToUpdateQuery({
       object: cardData,
       offset: 2,
-    });
-
+    }
+  );
+  
   connection.query(
     `
     UPDATE cards
