@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import NotFound from "../errors/NotFoundError.js";
 import * as employeeRepository from "../repositories/employeeRepository.js"
 import * as cardRepository from "../repositories/cardRepository.js"
+import * as rechargeRepository from "../repositories/rechargeRepository.js"
 import Conflict from "../errors/ConflictError.js";
 import { formatEmployeeName } from "../utils/formatEmployeeName.js";
 import Unauthorized from "../errors/UnauthorizedError.js";
@@ -50,4 +51,14 @@ export async function activateCard(cardInfo: any){
     const hashedPassword = bcrypt.hashSync(cardInfo.cardPassword, 12);
 
     await cardRepository.update(cardInfo.cardId, {...card, password:hashedPassword});
+}
+
+export async function rechargeCard(cardId: any, amount: number){
+    const card = await cardRepository.findById(cardId);
+    if(!card) throw new NotFound("Card not registered")
+
+    const formatedExpirationDate = `${card.expirationDate.split("/")[0]}/01/${card.expirationDate.split("/")[1]}`
+    if(dayjs(formatedExpirationDate).isBefore(dayjs())) throw new Unauthorized("Card is expired")
+
+    await rechargeRepository.insert({cardId, amount});
 }
