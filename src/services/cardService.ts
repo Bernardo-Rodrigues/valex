@@ -32,7 +32,7 @@ export async function createCard(newCard: any){
         securityCode: hashedSecurityCode,
         expirationDate,
         isVirtual: false,
-        isBlocked: true,
+        isBlocked: false,
         type: newCard.cardType
 
     })
@@ -74,6 +74,7 @@ export async function makePayment(paymentInfo: any){
     if(dayjs(formatedExpirationDate).isBefore(dayjs())) throw new Unauthorized("Card is expired")
 
     if(!bcrypt.compareSync(paymentInfo.password, card.password)) throw new Unauthorized("Password is wrong")
+    if(card.isBlocked) throw new Forbidden("Blocked card")
 
     const business = await businessRepository.findById(paymentInfo.businessId)
     if(!business) throw new NotFound("Business not registered")
