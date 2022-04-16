@@ -44,6 +44,8 @@ export async function activateCard(cardInfo: any){
     const card = await cardRepository.findById(cardInfo.cardId);
     if(!card) throw new NotFound("Card not registered")
 
+    if(card.isVirtual) throw new Forbidden("Only non-virtual cards must be activated")
+
     const formatedExpirationDate = `${card.expirationDate.split("/")[0]}/01/${card.expirationDate.split("/")[1]}`
     if(dayjs(formatedExpirationDate).isBefore(dayjs())) throw new Unauthorized("Card is expired")
 
@@ -60,6 +62,8 @@ export async function rechargeCard(cardId: any, amount: number){
     const card = await cardRepository.findById(cardId);
     if(!card) throw new NotFound("Card not registered")
 
+    if(card.isVirtual) throw new Forbidden("Virtual cards should not be recharged")
+
     const formatedExpirationDate = `${card.expirationDate.split("/")[0]}/01/${card.expirationDate.split("/")[1]}`
     if(dayjs(formatedExpirationDate).isBefore(dayjs())) throw new Unauthorized("Card is expired")
 
@@ -69,6 +73,8 @@ export async function rechargeCard(cardId: any, amount: number){
 export async function makePayment(paymentInfo: any){
     const card = await cardRepository.findById(paymentInfo.cardId);
     if(!card) throw new NotFound("Card not registered")
+
+    if(card.isVirtual) throw new Forbidden("Virtual cards cannot be used for POS purchases")
 
     const formatedExpirationDate = `${card.expirationDate.split("/")[0]}/01/${card.expirationDate.split("/")[1]}`
     if(dayjs(formatedExpirationDate).isBefore(dayjs())) throw new Unauthorized("Card is expired")
