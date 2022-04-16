@@ -4,55 +4,73 @@ import NotFound from "../errors/NotFoundError.js";
 import * as cardRepository from "../repositories/cardRepository.js"
 import * as businessRepository from "../repositories/businessRepository.js"
 import * as paymentRepository from "../repositories/paymentRepository.js"
+import Forbidden from "../errors/BadRequestError.js";
+import BadRequest from "../errors/BadRequestError.js";
 import Unauthorized from "../errors/UnauthorizedError.js";
-import Forbidden from "../errors/ForbiddenError.js";
 
-export async function makePurchase(paymentInfo: any){
-    const card = await cardRepository.findById(paymentInfo.cardId);
-    if(!card) throw new NotFound("Card not registered")
+export async function makePurchase(purchaseInfo: any){
+    const { cardId, businessId, amount, password } = purchaseInfo
 
-    if(card.isVirtual) throw new Forbidden("Virtual cards cannot be used for POS purchases")
+    const card = await validateCardExistence(cardId)
 
-    const formatedExpirationDate = `${card.expirationDate.split("/")[0]}/01/${card.expirationDate.split("/")[1]}`
-    if(dayjs(formatedExpirationDate).isBefore(dayjs())) throw new Unauthorized("Card is expired")
+    await validatePurchase(password, card, purchaseInfo)
 
-    if(!bcrypt.compareSync(paymentInfo.password, card.password)) throw new Unauthorized("Password is wrong")
-    if(card.isBlocked) throw new Forbidden("Blocked card")
-
-    const business = await businessRepository.findById(paymentInfo.businessId)
-    if(!business) throw new NotFound("Business not registered")
-
-    if(business.type !== card.type) throw new Unauthorized("Invalid transaction")
-
-    const [ totalRecharges, totalPayments ] = await cardRepository.getTotalOfTransactions(paymentInfo.cardId)
-    const balance = totalRecharges.value - totalPayments.value
-    if(balance < paymentInfo.amount) throw new Unauthorized("Insufficient balance")
-
-    await paymentRepository.insert({cardId:paymentInfo.cardId, businessId:paymentInfo.businessId, amount:paymentInfo.amount})
+    await paymentRepository.insert({cardId, businessId, amount})
 }
 
 export async function makeOnlinePurchase(purchaseInfo: any){
     const { number, name, expirationDate, CVC, businessId, amount } = purchaseInfo
 
+    const card = await validateCardForOnlinePurchase(number, name, expirationDate)
+
+    await validatePurchase(CVC, card, purchaseInfo)
+
+    await paymentRepository.insert({cardId:card.id, businessId, amount})
+}
+
+async function validateBusiness(id: number, card: any){
+    const business = await businessRepository.findById(id);
+    if(!business) throw new NotFound("Business not found")
+    if(business.type !== card.type) throw new Forbidden("Invalid card type")
+}
+
+async function validateCardForOnlinePurchase(number: string, name: string, expirationDate: any) {
     const card = await cardRepository.findByCardDetails(number, name, expirationDate);
     if(!card) throw new NotFound("Card not registered")
-    const cardIdForPurchase = card.isVirtual ? card.originalCardId : card.id
 
-    if(!bcrypt.compareSync(CVC, card.securityCode)) throw new Unauthorized("CVC is wrong")
+    return {
+        ...card,
+        id: card.isVirtual ? card.originalCardId : card.id
+    }
+}
 
-    const formatedExpirationDate = `${card.expirationDate.split("/")[0]}/01/${card.expirationDate.split("/")[1]}`
-    if(dayjs(formatedExpirationDate).isBefore(dayjs())) throw new Unauthorized("Card is expired")
+async function validateCardExistence(cardId: number){
+    const card = await cardRepository.findById(cardId);
+    if(!card) throw new NotFound("Card not registered")
+    
+    return card
+}
+
+async function validateCardExpired(expirationDate: any){
+    const formatedExpirationDate = `${expirationDate.split("/")[0]}/01/${expirationDate.split("/")[1]}`
+    if(dayjs(formatedExpirationDate).isBefore(dayjs())) throw new BadRequest("Card is expired")
+}
+
+async function validateCardBalance(paymentInfo:any) {
+    const [ totalRecharges, totalPayments ] = await cardRepository.getTotalOfTransactions(paymentInfo.cardId)
+    const balance = totalRecharges.value - totalPayments.value
+    if(balance < paymentInfo.amount) throw new BadRequest("Insufficient balance")
+}
+
+async function validatePurchase(auth: string, card: any, purchaseInfo: any){
+    if(auth.length === 3) if(!bcrypt.compareSync(auth, card.securityCode)) throw new Unauthorized("CVC is wrong")
+    else if(!bcrypt.compareSync(auth, card.password)) throw new Unauthorized("Password is wrong")
+
+    await validateCardExpired(card.expirationDate)
+
     if(card.isBlocked) throw new Forbidden("Blocked card")
 
-    const business = await businessRepository.findById(businessId)
-    if(!business) throw new NotFound("Business not registered")
+    await validateBusiness(purchaseInfo.businessId, card)
 
-    if(business.type !== card.type) throw new Unauthorized("Invalid card type")
-
-
-    const [ totalRecharges, totalPayments ] = await cardRepository.getTotalOfTransactions(cardIdForPurchase)
-    const balance = totalRecharges.value - totalPayments.value
-    if(balance < amount) throw new Unauthorized("Insufficient balance")
-
-    await paymentRepository.insert({cardId:cardIdForPurchase, businessId, amount})
+    await validateCardBalance(purchaseInfo)
 }

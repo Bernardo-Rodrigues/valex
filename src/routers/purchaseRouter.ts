@@ -4,7 +4,7 @@ import validateSchemaMiddleware from "../middlewares/validateSchemaMiddleware.js
 
 const purchaseRouter = Router();
 
-purchaseRouter.post("/purchases/card/:id", validateSchemaMiddleware, controller.makePurchase)
-purchaseRouter.post("/purchases/online-card", validateSchemaMiddleware, controller.makeOnlinePurchase)
+purchaseRouter.post("/purchases/cards/:id", validateSchemaMiddleware, controller.makePurchase)
+purchaseRouter.post("/purchases/online-cards", validateSchemaMiddleware, controller.makeOnlinePurchase)
 
 export default purchaseRouter; 

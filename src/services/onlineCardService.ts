@@ -1,30 +1,24 @@
-import { faker } from "@faker-js/faker";
-import dayjs from "dayjs";
 import bcrypt from "bcrypt";
 import NotFound from "../errors/NotFoundError.js";
 import * as cardRepository from "../repositories/cardRepository.js"
+import Forbidden from "../errors/BadRequestError.js";
 import Unauthorized from "../errors/UnauthorizedError.js";
-import Forbidden from "../errors/ForbiddenError.js";
+import generateCardInfo from "../utils/generateCardInfo.js";
 
 export async function createOnlineCard(vinculatedCard: any){
-    const card = await cardRepository.findById(vinculatedCard.vinculatedId);
-    if(!card) throw new NotFound("Card not registered")
-    const { id:originalCardId, employeeId, cardholderName, type, password } = card
+    const card = await validateCardExistence(vinculatedCard.vinculatedId)
+    const { id: originalCardId, employeeId, cardholderName, type, password } = card
 
     if(!password) throw new Forbidden("Card has not yet been activated")
     if(!bcrypt.compareSync(vinculatedCard.cardPassword, password)) throw new Unauthorized("Password is wrong")
-    if(cardholderName !== vinculatedCard.name) throw new Unauthorized("Name is wrong")
 
-    const securityCode = faker.finance.creditCardCVV()
-    const hashedSecurityCode = bcrypt.hashSync(securityCode, 12);
-    const expirationDate = dayjs().add(5, "year").format("MM/YY")
-    const number = faker.finance.creditCardNumber('mastercard')
+    const { number, securityCode, expirationDate } = generateCardInfo()
 
-    const id = await cardRepository.insert({
+    await cardRepository.insert({
         employeeId,
         number,
         cardholderName,
-        securityCode: hashedSecurityCode,
+        securityCode,
         password,
         expirationDate,
         isVirtual: true,
@@ -33,16 +27,20 @@ export async function createOnlineCard(vinculatedCard: any){
         type
 
     })
-
-    return {id, securityCode};
 }
 
 export async function deleteOnlineCard(cardInfo: any){
-    const card = await cardRepository.findById(cardInfo.cardId);
-    if(!card) throw new NotFound("Card not registered")
+    const card = await validateCardExistence(cardInfo.cardId)
 
     if(!card.isVirtual) throw new Forbidden("Only virtual cards can be deleted")
     if(!bcrypt.compareSync(cardInfo.cardPassword, card.password)) throw new Unauthorized("Password is wrong")
 
     await cardRepository.remove(cardInfo.cardId);
+}
+
+async function validateCardExistence(cardId: number){
+    const card = await cardRepository.findById(cardId);
+    if(!card) throw new NotFound("Card not registered")
+    
+    return card
 }

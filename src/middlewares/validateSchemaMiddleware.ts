@@ -3,10 +3,9 @@ import { stripHtml } from "string-strip-html"
 import UnprocessableEntity from "../errors/UnprocessableEntityError.js"
 import activateCardSchema from "../schemas/activateCardSchema.js"
 import cardSchema from "../schemas/cardSchema.js"
-import onlineCardCreationSchema from "../schemas/onlineCardCreationSchema.js"
-import onlinePaymentSchema from "../schemas/onlinePaymentSchema.js"
+import onlinePurchaseSchema from "../schemas/onlinePurchaseSchema.js"
 import passwordSchema from "../schemas/passwordSchema.js"
-import paymentSchema from "../schemas/paymentSchema.js"
+import purchaseSchema from "../schemas/purchaseSchema.js"
 import rechargeSchema from "../schemas/rechargeSchema.js"
 
 function sanitizeString(string: string){
@@ -17,18 +16,17 @@ const schemas = {
     "/cards": cardSchema,
     "/cards/activate": activateCardSchema,
     "/cards/recharge": rechargeSchema,
-    "/cards/payment": paymentSchema,
     "/cards/block": passwordSchema,
     "/cards/unlock": passwordSchema,
-    "/cards/online": onlinePaymentSchema,
-    "/online-cards": onlineCardCreationSchema
+    "/online-cards": passwordSchema,
+    "/purchases/cards": purchaseSchema,
+    "/purchases/online-card": onlinePurchaseSchema
 }
 
 export default async function validateSchemaMiddleware(req: Request, res: Response, next: NextFunction){
     const { body } = req
-    const route = req.path.split("/").length === 2 
-    ? "/"+req.path.split("/")[1]
-    : "/"+req.path.split("/")[1]+"/"+req.path.split("/")[3]
+    
+    const route = formatPathName(req.path)
     const schema = schemas[route]
 
     Object.keys(body).forEach( key => {
@@ -40,3 +38,13 @@ export default async function validateSchemaMiddleware(req: Request, res: Respon
 
     next()
 } 
+
+function formatPathName(path: string){
+    const params = path.split("/")
+
+    return (params[1] === "purchases")
+    ? "/" + params[1] + "/" + params[2]
+    : (params.length === 2 || params.length === 3)
+    ? "/" + params[1]
+    : "/" + params[1] + "/" + params[3]
+}

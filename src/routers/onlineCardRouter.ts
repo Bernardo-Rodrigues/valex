@@ -4,7 +4,7 @@ import validateSchemaMiddleware from "../middlewares/validateSchemaMiddleware.js
 
 const onlineCardRouter = Router();
 
-onlineCardRouter.post("/online-cards", validateSchemaMiddleware, controller.createOnlineCard)
-onlineCardRouter.delete("/online-cards/:id", controller.deleteOnlineCard)
+onlineCardRouter.post("/online-cards/:id", validateSchemaMiddleware, controller.createOnlineCard)
+onlineCardRouter.delete("/online-cards/:id",validateSchemaMiddleware, controller.deleteOnlineCard)
 
 export default onlineCardRouter; 

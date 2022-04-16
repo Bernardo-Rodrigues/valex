@@ -4,9 +4,9 @@ import * as cardService from "../services/cardService.js"
 export async function  createCard(req: Request, res: Response){
     const newCard = req.body
 
-    const card = await cardService.createCard(newCard);
+    await cardService.createCard(newCard);
 
-    res.status(201).send(card);
+    res.sendStatus(201)
 }
 
 export async function  activateCard(req: Request, res: Response){
