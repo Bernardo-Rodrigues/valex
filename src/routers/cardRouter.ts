@@ -7,12 +7,9 @@ const cardRouter = Router();
 
 cardRouter.get("/cards/:id", controller.getMetrics)
 cardRouter.post("/cards", validateSchemaMiddleware, validateApiKeyMiddleware, controller.createCard)
-cardRouter.post("/cards/:id/activate", validateSchemaMiddleware, controller.activateCard)
-cardRouter.post("/cards/:id/recharge", validateApiKeyMiddleware, validateSchemaMiddleware, controller.rechargeCard)
-cardRouter.post("/cards/:id/payment", validateSchemaMiddleware, controller.makePayment)
-cardRouter.post("/cards/:id/payment", validateSchemaMiddleware, controller.makePayment)
-cardRouter.post("/cards/:id/block", validateSchemaMiddleware, controller.blockCard)
-cardRouter.post("/cards/:id/unlock", validateSchemaMiddleware, controller.unlockCard)
-cardRouter.post("/cards/payment/online", validateSchemaMiddleware, controller.makeOnlinePurchase)
+cardRouter.put("/cards/:id/activate", validateSchemaMiddleware, controller.activateCard)
+cardRouter.put("/cards/:id/recharge", validateApiKeyMiddleware, validateSchemaMiddleware, controller.rechargeCard)
+cardRouter.put("/cards/:id/block", validateSchemaMiddleware, controller.blockCard)
+cardRouter.put("/cards/:id/unlock", validateSchemaMiddleware, controller.unlockCard)
 
 export default cardRouter; 
