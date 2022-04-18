@@ -4,7 +4,7 @@ import PurchaseService from "../services/purchaseService.js";
 const purchaseService = new PurchaseService();
 
 export async function  makePOSPurchase(req: Request, res: Response){
-    const cardId = req.params.id;
+    const cardId = parseInt(req.params.id);
     const paymentInfo = req.body;
 
     await purchaseService.makePOSPurchase({...paymentInfo, cardId});

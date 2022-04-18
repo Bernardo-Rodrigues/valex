@@ -9,7 +9,7 @@ const cardRouter = Router();
 cardRouter.post("/cards", validateSchemaMiddleware(cardSchema), validateApiKeyMiddleware, controller.createCard);
 cardRouter.get("/cards/:id", controller.getMetrics);
 cardRouter.put("/cards/:id/activate", validateSchemaMiddleware(activateCardSchema), controller.activateCard);
-cardRouter.put("/cards/:id/recharge", validateApiKeyMiddleware, validateSchemaMiddleware(cardRechargeSchema), controller.rechargeCard);
+cardRouter.post("/cards/:id/recharge", validateApiKeyMiddleware, validateSchemaMiddleware(cardRechargeSchema), controller.rechargeCard);
 cardRouter.put("/cards/:id/block", validateSchemaMiddleware(cardPasswordSchema), controller.blockCard);
 cardRouter.put("/cards/:id/unlock", validateSchemaMiddleware(cardPasswordSchema), controller.unlockCard);
 
