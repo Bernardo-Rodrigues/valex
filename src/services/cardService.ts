@@ -1,12 +1,13 @@
 import dayjs from "dayjs";
 import bcrypt from "bcrypt";
-import { NotFound, Conflict, BadRequest, Forbidden, Unauthorized } from "../errors/index.js"
 import repositories from "../repositories/index.js";
 import generateCardInfo from "../utils/generateCardInfo.js";
-import TransactionTypes from "../types/TransactionTypes.js";
+import { NotFound, Conflict, BadRequest, Forbidden, Unauthorized } from "../errors/index.js"
+import { TransactionTypes, PaymentWithBusinessName } from "../types/index.js";
+import { NewCard, ActivateCard, BlockOrUnlockCard, CardMetrics, Recharge, Card } from "../interfaces/index.js";
 
 export default class CardService{
-    async createCard(newCard: any){
+    async createCard(newCard: NewCard){
         await validateCardType(newCard.cardType, newCard.employeeId)
         const employeeName = await validateEmployee(newCard.employeeId)
         const cardInfo = generateCardInfo("card", employeeName)
@@ -20,14 +21,14 @@ export default class CardService{
         })
     }
 
-    async activateCard(cardInfo: any){
+    async activateCard(cardInfo: ActivateCard){
         const card = await validateNonVirtualCard(cardInfo.cardId, "Only non-virtual cards must be activated")
         validateCardActivation(card, cardInfo)
     
         await repositories.card.update(cardInfo.cardId, {...card, password: bcrypt.hashSync(cardInfo.cardPassword, 12)});
     }
     
-    async getMetrics(cardId: any){
+    async getMetrics(cardId: number){
         const card = await validateCardExistence(cardId)
         const originalId = card.isVirtual ? card.originalCardId : cardId
         const metrics = generateMetrics(originalId)
@@ -35,16 +36,16 @@ export default class CardService{
         return metrics
     }
     
-    async rechargeCard(cardId: any, amount: number){
+    async rechargeCard(cardId: number, amount: number){
         await validateNonVirtualCard(cardId, "Virtual cards should not be recharged")
         await repositories.recharge.insert({cardId, amount});
     }
     
-    async unlockCard(cardInfo: any){
+    async unlockCard(cardInfo: BlockOrUnlockCard){
         await blockOrUnlockCard("unlock", cardInfo);
     }
     
-    async blockCard(cardInfo: any){
+    async blockCard(cardInfo: BlockOrUnlockCard){
         await blockOrUnlockCard("block", cardInfo);
     }
 }
@@ -78,7 +79,7 @@ async function validateCardExistence(cardId: number){
     return card
 }
 
-async function validateCardExpired(expirationDate: any){
+async function validateCardExpired(expirationDate: string){
     const formatedExpirationDate = `${expirationDate.split("/")[0]}/01/${expirationDate.split("/")[1]}`
     if(dayjs(formatedExpirationDate).isBefore(dayjs())) throw new BadRequest("Card is expired")
 }
@@ -89,7 +90,7 @@ async function getBalance(cardId: number){
     return totalRecharges.value - totalPayments.value
 }
 
-async function blockOrUnlockCard(option: string, cardInfo:any){
+async function blockOrUnlockCard(option: string, cardInfo: BlockOrUnlockCard){
     const card = await validateCardExistence(cardInfo.cardId)
 
     if(!bcrypt.compareSync(cardInfo.cardPassword, card.password)) throw new Unauthorized("Password is wrong")
@@ -118,7 +119,7 @@ async function generateMetrics (cardId: number){
     return formatMetrics({balance, transactions, recharges})
 }
 
-function formatMetrics(metrics: any){
+function formatMetrics(metrics: CardMetrics){
     const transactions = formatDates(metrics.transactions)
     const recharges = formatDates(metrics.recharges)
     
@@ -129,8 +130,8 @@ function formatMetrics(metrics: any){
     }
 }
 
-function formatDates (objects:[]){
-    return objects.map( (object:any) => {
+function formatDates (objects: PaymentWithBusinessName[] | Recharge[]){
+    return objects.map( (object: PaymentWithBusinessName) => {
         return{
             ...object,
             timestamp: dayjs(object.timestamp).format("DD/MM/YYYY"),
@@ -138,7 +139,7 @@ function formatDates (objects:[]){
     })
 }
 
-function validateCardActivation(card: any, cardInfo:any){
+function validateCardActivation(card: Card, cardInfo: ActivateCard){
     if(card.password) throw new BadRequest("Card has already been activated")
     
     if(!bcrypt.compareSync(cardInfo.cvc, card.securityCode)) throw new Unauthorized("CVC is wrong")

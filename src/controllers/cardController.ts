@@ -12,7 +12,7 @@ export async function  createCard(req: Request, res: Response){
 }
 
 export async function  activateCard(req: Request, res: Response){
-    const cardId = req.params.id;
+    const cardId = parseInt(req.params.id);
     const cardInfo = req.body;
 
     await cardService.activateCard({...cardInfo, cardId});
@@ -21,7 +21,7 @@ export async function  activateCard(req: Request, res: Response){
 }
 
 export async function  rechargeCard(req: Request, res: Response){
-    const cardId = req.params.id;
+    const cardId = parseInt(req.params.id);
     const { amount } = req.body;
 
     await cardService.rechargeCard(cardId, amount);
@@ -30,7 +30,7 @@ export async function  rechargeCard(req: Request, res: Response){
 }
 
 export async function  getMetrics(req: Request, res: Response){
-    const cardId = req.params.id;
+    const cardId = parseInt(req.params.id);
 
     const metrics = await cardService.getMetrics(cardId);
 
@@ -38,7 +38,7 @@ export async function  getMetrics(req: Request, res: Response){
 }
 
 export async function  unlockCard(req: Request, res: Response){
-    const cardId = req.params.id;
+    const cardId = parseInt(req.params.id);
     const { cardPassword } = req.body;
 
     await cardService.unlockCard({cardId, cardPassword});
@@ -47,7 +47,7 @@ export async function  unlockCard(req: Request, res: Response){
 }
 
 export async function  blockCard(req: Request, res: Response){
-    const cardId = req.params.id;
+    const cardId = parseInt(req.params.id);
     const { cardPassword } = req.body;
 
     await cardService.blockCard({cardId, cardPassword});

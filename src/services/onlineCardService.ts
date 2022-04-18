@@ -1,10 +1,11 @@
 import bcrypt from "bcrypt";
 import { NotFound, Forbidden, Unauthorized } from "../errors/index.js"
+import { VinculatedCard, DeleteCard } from "../interfaces/index.js";
 import repositories from "../repositories/index.js";
 import generateCardInfo from "../utils/generateCardInfo.js";
 
 export default class OnlineCardService {
-    async createOnlineCard(vinculatedCard: any){
+    async createOnlineCard(vinculatedCard: VinculatedCard){
         const card = await validateCardExistence(vinculatedCard.vinculatedId)
         const { id: originalCardId, employeeId, cardholderName, type, password, isBlocked } = card
         const originalCardInfo = { originalCardId, employeeId, cardholderName, type, password, isBlocked }
@@ -21,7 +22,7 @@ export default class OnlineCardService {
         })
     }
 
-    async deleteOnlineCard(cardInfo: any){
+    async deleteOnlineCard(cardInfo: DeleteCard){
         const card = await validateCardExistence(cardInfo.cardId)
 
         if(!card.isVirtual) throw new Forbidden("Only virtual cards can be deleted")
