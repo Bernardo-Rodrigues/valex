@@ -4,8 +4,8 @@ import { VinculatedCard, DeleteCard } from "../interfaces/index.js";
 import repositories from "../repositories/index.js";
 import generateCardInfo from "../utils/generateCardInfo.js";
 
-export default class OnlineCardService {
-    async createOnlineCard(vinculatedCard: VinculatedCard){
+export default class VirtualCardService {
+    async createVirtualCard(vinculatedCard: VinculatedCard){
         const card = await validateCardExistence(vinculatedCard.vinculatedId)
         const { id: originalCardId, employeeId, cardholderName, type, password, isBlocked } = card
         const originalCardInfo = { originalCardId, employeeId, cardholderName, type, password, isBlocked }
@@ -13,16 +13,16 @@ export default class OnlineCardService {
         if(!password) throw new Forbidden("Card has not yet been activated")
         if(!bcrypt.compareSync(vinculatedCard.cardPassword, password)) throw new Unauthorized("Password is wrong")
 
-        const onlineCardInfo = generateCardInfo("online-card", cardholderName)
+        const virtualCardInfo = generateCardInfo("virtual-card", cardholderName)
 
         await repositories.card.insert({
             ...originalCardInfo,
-            ...onlineCardInfo,
+            ...virtualCardInfo,
             isVirtual: true
         })
     }
 
-    async deleteOnlineCard(cardInfo: DeleteCard){
+    async deleteVirtualCard(cardInfo: DeleteCard){
         const card = await validateCardExistence(cardInfo.cardId)
 
         if(!card.isVirtual) throw new Forbidden("Only virtual cards can be deleted")
