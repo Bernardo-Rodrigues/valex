@@ -1,10 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import Conflict from "../errors/ConflictError.js";
-import NotFound from "../errors/NotFoundError.js";
-import Unauthorized from "../errors/UnauthorizedError.js";
-import UnprocessableEntity from "../errors/UnprocessableEntityError.js";
-import BadRequest from "../errors/BadRequestError.js";
-import Forbidden from "../errors/ForbiddenError.js";
+import { Conflict, NotFound, Unauthorized, UnprocessableEntity, BadRequest, Forbidden } from "../errors/index.js"
 
 export default async function errorHandlingMiddleware(error: any, req: Request, res: Response, next: NextFunction) {
 	if (error instanceof UnprocessableEntity || 

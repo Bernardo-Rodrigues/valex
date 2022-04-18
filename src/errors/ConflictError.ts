@@ -4,6 +4,6 @@ export default class Conflict{
 
     constructor(message: string){
         this.message = message;
-        this.status = 409
+        this.status = 409;
     }
 } 

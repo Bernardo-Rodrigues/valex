@@ -4,6 +4,6 @@ export default class BadRequest{
 
     constructor(message: string){
         this.message = message;
-        this.status = 400
+        this.status = 400;
     }
 } 

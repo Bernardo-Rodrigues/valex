@@ -4,6 +4,6 @@ export default class Unauthorized{
 
     constructor(message: string){
         this.message = message;
-        this.status = 401
+        this.status = 401;
     }
 } 

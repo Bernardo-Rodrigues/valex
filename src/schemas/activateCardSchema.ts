@@ -1,10 +1,10 @@
-import joi from "joi"
+import joi from "joi";
 
-const cardPasswordRegex = /^[0-9]{4}$/
-const CVCRegex = /^[0-9]{3}$/
+const cardPasswordRegex = /^[0-9]{4}$/;
+const cvcRegex = /^[0-9]{3}$/;
 
 const activateCardSchema = joi.object({
-    CVC: joi.string().pattern(CVCRegex).required(),
+    cvc: joi.string().pattern(cvcRegex).required(),
     cardPassword: joi.string().pattern(cardPasswordRegex).required()
 })
 

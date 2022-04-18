@@ -1,9 +1,11 @@
-import Unauthorized from "../errors/UnauthorizedError.js";
-import * as companyRepository from "../repositories/companyRepository.js"
+import { Unauthorized } from "../errors/index.js";
+import repositories from "../repositories/index.js";
 
-export async function validateKey(apiKey: string){
-    const company = await companyRepository.findByApiKey(apiKey);
-    if(!company) throw new Unauthorized("Invalid api key")
+export default class CompanyService{
+    async validateKey(apiKey: string){
+        const company = await repositories.company.findByApiKey(apiKey);
+        if(!company) throw new Unauthorized("Invalid api key")
 
-    return company
+        return company
+    }
 }

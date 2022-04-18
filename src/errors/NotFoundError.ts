@@ -4,6 +4,6 @@ export default class NotFound{
 
     constructor(message: string){
         this.message = message;
-        this.status = 404
+        this.status = 404;
     }
 } 

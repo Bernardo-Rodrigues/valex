@@ -4,6 +4,6 @@ export default class UnprocessableEntity{
 
     constructor(message: string){
         this.message = message;
-        this.status = 422
+        this.status = 422;
     }
 } 

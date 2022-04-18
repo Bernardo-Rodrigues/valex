@@ -1,10 +1,10 @@
-import joi from "joi"
+import joi from "joi";
 
 const cardPasswordRegex = /^[0-9]{4}$/
 
-const onlineCardCreationSchema = joi.object({
+const onlineCardSchema = joi.object({
     vinculatedId: joi.number().required(),
     cardPassword: joi.string().pattern(cardPasswordRegex).required()
 })
 
-export default onlineCardCreationSchema;
+export default onlineCardSchema;

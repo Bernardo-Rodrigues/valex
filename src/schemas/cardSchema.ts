@@ -1,4 +1,4 @@
-import joi from "joi"
+import joi from "joi";
 
 const cardSchema = joi.object({
     employeeId: joi.number().required(),

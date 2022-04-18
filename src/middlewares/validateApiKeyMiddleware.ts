@@ -1,6 +1,8 @@
 import { NextFunction } from "connect";
 import { Request, Response } from "express";
-import * as companyService from "../services/companyService.js"
+import CompanyService from "../services/companyService.js";
+
+const companyService = new CompanyService();
 
 export default async function validateApiKeyMiddleware(req: Request, res: Response, next: NextFunction) {
     const apiKey = req.headers["x-api-key"];
